@@ -1,6 +1,7 @@
 # Product Requirements Document (PRD)
 ## Network Speed Monitor v1.0
 
+
 ### 1. Executive Summary
 A lightweight Windows utility that measures true internet speed by bypassing VPN tunnels. Identifies worst daily/weekly time periods for network performance via a React dashboard.
 
