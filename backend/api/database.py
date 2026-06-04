@@ -44,8 +44,7 @@ def init_db():
 
 
 def insert_sample(
-    download_mbps, upload_mbps, latency_ms, adapter_name,
-    adapter_hardware_id=None
+    download_mbps, upload_mbps, latency_ms, adapter_name, adapter_hardware_id=None
 ):
     """Insert one speed test result."""
     conn = sqlite3.connect(DB_PATH)

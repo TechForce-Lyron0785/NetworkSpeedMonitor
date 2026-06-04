@@ -14,11 +14,8 @@ from api.database import insert_sample, init_db  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("poller.log"),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("poller.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger("Poller")
 
@@ -58,7 +55,7 @@ class SpeedMonitorPoller:
                 upload_mbps=data["upload_mbps"],
                 latency_ms=data["latency_ms"],
                 adapter_name=adapter_name,
-                adapter_hardware_id=adapter_hwid
+                adapter_hardware_id=adapter_hwid,
             )
             logger.info("Sample saved.")
         else:
