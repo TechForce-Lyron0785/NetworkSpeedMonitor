@@ -3,6 +3,7 @@ Physical network adapter detection for Windows.
 Uses WMI as primary, psutil as fallback.
 Filters out VPN/virtual adapters.
 """
+
 import logging
 import psutil
 import wmi
@@ -11,9 +12,22 @@ logger = logging.getLogger(__name__)
 
 # Keywords that indicate VPN or virtual adapters
 VPN_KEYWORDS = [
-    'vpn', 'virtual', 'tap', 'tun', 'openvpn', 'wireguard',
-    'pia', 'nord', 'expressvpn', 'cyberghost', 'protonvpn',
-    'multilayer', 'ndis virtual', 'hyper-v', 'vmware', 'virtualbox'
+    "vpn",
+    "virtual",
+    "tap",
+    "tun",
+    "openvpn",
+    "wireguard",
+    "pia",
+    "nord",
+    "expressvpn",
+    "cyberghost",
+    "protonvpn",
+    "multilayer",
+    "ndis virtual",
+    "hyper-v",
+    "vmware",
+    "virtualbox",
 ]
 
 
@@ -34,8 +48,7 @@ def get_physical_adapter_wmi() -> tuple:
         # Filters: NetEnabled=True, PhysicalAdapter=True (Windows 8+),
         # AdapterType in (0=Ethernet, 6=some physical, 9=Wireless, 71=Wi-Fi)
         adapters = c.Win32_NetworkAdapter(
-            NetEnabled=True,
-            PhysicalAdapter=True  # Works on Windows 8 and later
+            NetEnabled=True, PhysicalAdapter=True  # Works on Windows 8 and later
         )
         for adapter in adapters:
             name = adapter.Name

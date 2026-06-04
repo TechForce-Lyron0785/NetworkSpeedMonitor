@@ -41,11 +41,13 @@ def generate_mock_daily(date_str: str):
         for minute in [0, 15, 30, 45]:
             download = random.uniform(20, 95)
             upload = download * 0.3
-            samples.append(SpeedPoint(
-                time=f"{hour:02d}:{minute:02d}",
-                download=round(download, 1),
-                upload=round(upload, 1)
-            ))
+            samples.append(
+                SpeedPoint(
+                    time=f"{hour:02d}:{minute:02d}",
+                    download=round(download, 1),
+                    upload=round(upload, 1),
+                )
+            )
     return samples
 
 
@@ -77,6 +79,8 @@ async def get_worst_times(period: str = "day", date: Optional[str] = None):
 async def health():
     return {"status": "ok", "last_sample": datetime.now().isoformat()}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
