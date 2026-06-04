@@ -6,7 +6,7 @@ Filters out VPN/virtual adapters.
 
 import logging
 import psutil
-import wmi
+import wmi  # type: ignore[import-untyped]
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def get_physical_adapter_wmi() -> tuple:
         # Filters: NetEnabled=True, PhysicalAdapter=True (Windows 8+),
         # AdapterType in (0=Ethernet, 6=some physical, 9=Wireless, 71=Wi-Fi)
         adapters = c.Win32_NetworkAdapter(
-            NetEnabled=True, PhysicalAdapter=True  # Works on Windows 8 and later
+            NetEnabled=True, PhysicalAdapter=True
         )
         for adapter in adapters:
             name = adapter.Name
