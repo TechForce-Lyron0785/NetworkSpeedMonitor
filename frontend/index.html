@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NetworkSpeedMonitor</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Network Speed Monitor</h1>
+      <div class="controls">
+        <label>
+          API URL
+          <input id="api-url" type="text" value="http://localhost:8000" />
+        </label>
+        <button id="refresh">Refresh</button>
+        <span id="status" class="status"></span>
+      </div>
+    </header>
+
+    <section class="cards" id="cards">
+      <div class="card">
+        <div class="card-label">Download</div>
+        <div class="card-value"><span id="latest-download">—</span> Mbps</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Upload</div>
+        <div class="card-value"><span id="latest-upload">—</span> Mbps</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Ping</div>
+        <div class="card-value"><span id="latest-ping">—</span> ms</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Samples</div>
+        <div class="card-value"><span id="sample-count">0</span></div>
+      </div>
+    </section>
+
+    <section class="chart-wrap">
+      <canvas id="speed-chart"></canvas>
+    </section>
+    <section class="chart-wrap">
+      <canvas id="ping-chart"></canvas>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
