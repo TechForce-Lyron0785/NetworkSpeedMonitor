@@ -2,7 +2,6 @@
 Measure internet speed through a specific physical adapter.
 Uses Cloudflare speed test endpoints with source address binding.
 """
-
 import time
 import socket
 import requests
@@ -19,17 +18,16 @@ UPLOAD_URL = "https://speed.cloudflare.com/__up"
 
 class SourceAddressAdapter(HTTPAdapter):
     """Requests adapter that binds to a specific source IP address."""
-
     def __init__(self, source_address, **kwargs):
         self.source_address = (source_address, 0)
         super().__init__(**kwargs)
 
     def init_poolmanager(self, *args, **kwargs):
-        kwargs["source_address"] = self.source_address
+        kwargs['source_address'] = self.source_address
         return super().init_poolmanager(*args, **kwargs)
 
     def proxy_manager_for(self, *args, **kwargs):
-        kwargs["source_address"] = self.source_address
+        kwargs['source_address'] = self.source_address
         return super().proxy_manager_for(*args, **kwargs)
 
 
@@ -70,7 +68,7 @@ def measure_upload(session, timeout=30) -> float:
     """Measure upload speed in Mbps. Sends 10 MB of data."""
     try:
         # Generate 10 MB of random data
-        data = b"X" * (10 * 1024 * 1024)  # 10 MB
+        data = b'X' * (10 * 1024 * 1024)  # 10 MB
         start = time.time()
         session.post(UPLOAD_URL, data=data, timeout=timeout)
         elapsed = time.time() - start
@@ -107,16 +105,22 @@ def measure_speed(adapter_name: str) -> dict:
     logger.info(f"Binding to source IP: {ip}")
     session = requests.Session()
     adapter = SourceAddressAdapter(ip)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
 
     # Run tests
     download = measure_download(session)
     upload = measure_upload(session)
     latency = measure_latency(session)
 
-    logger.info(f"Results: {download} Mbps down, {upload} Mbps up, {latency} ms")
-    return {"download_mbps": download, "upload_mbps": upload, "latency_ms": latency}
+    logger.info(
+        f"Results: {download} Mbps down, {upload} Mbps up, {latency} ms"
+    )
+    return {
+        "download_mbps": download,
+        "upload_mbps": upload,
+        "latency_ms": latency
+    }
 
 
 if __name__ == "__main__":
