@@ -3,7 +3,7 @@
 ## Branch Strategy
 - `main` – production ready
 - `develop` – integration branch (optional, but we use `main` for solo)
-- Feature branches: `feature/backend-poller`, `feature/api-endpoints`, etc.
+- Feature branches: `backend/db-schema`, `backend/poller-stub`,`frontend/react-stub`, etc.
 
 ## Setup Development Environment
 ```bash
@@ -19,3 +19,4 @@ pip install -r requirements.txt
 # Frontend
 cd frontend
 npm install
+npm run dev

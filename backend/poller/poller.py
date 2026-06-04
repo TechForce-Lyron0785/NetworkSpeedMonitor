@@ -1,4 +1,5 @@
-# backend/poller/poller.py
+# backend/poller/poller.py is a placeholder that will later be replaced
+# with real adapter detection and speed measurement
 import random
 import time
 import logging
@@ -12,11 +13,8 @@ from backend.api.database import insert_sample, init_db  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("poller.log"),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("poller.log"), logging.StreamHandler()],
 )
 logger = logging.getLogger("Poller")
 
@@ -30,13 +28,25 @@ class SpeedMonitorPoller:
     def get_physical_adapter(self):
         """Return the best active physical network adapter name."""
         virtual_markers = (
-            "vpn", "virtual", "vmware", "virtualbox", "hyper-v", "vethernet",
-            "loopback", "tunnel", "tap", "tun", "wireguard", "tailscale",
-            "zerotier", "hamachi", "bluetooth", "npcap", "wintun"
+            "vpn",
+            "virtual",
+            "vmware",
+            "virtualbox",
+            "hyper-v",
+            "vethernet",
+            "loopback",
+            "tunnel",
+            "tap",
+            "tun",
+            "wireguard",
+            "tailscale",
+            "zerotier",
+            "hamachi",
+            "bluetooth",
+            "npcap",
+            "wintun",
         )
-        preferred_markers = (
-            "ethernet", "wi-fi", "wifi", "wireless", "wlan", "lan"
-        )
+        preferred_markers = ("ethernet", "wi-fi", "wifi", "wireless", "wlan", "lan")
 
         stats = psutil.net_if_stats()
         addrs = psutil.net_if_addrs()
@@ -45,15 +55,15 @@ class SpeedMonitorPoller:
         for name, iface_stats in stats.items():
             lowered = name.lower()
             if (
-                not iface_stats.isup or
-                lowered.startswith("lo") or
-                any(marker in lowered for marker in virtual_markers)
+                not iface_stats.isup
+                or lowered.startswith("lo")
+                or any(marker in lowered for marker in virtual_markers)
             ):
                 continue
 
             has_ipv4 = any(
-                addr.family == socket.AF_INET and
-                not addr.address.startswith(("127.", "169.254."))
+                addr.family == socket.AF_INET
+                and not addr.address.startswith(("127.", "169.254."))
                 for addr in addrs.get(name, ())
             )
             if not has_ipv4:
@@ -83,11 +93,7 @@ class SpeedMonitorPoller:
             f"Stub measurement: {download:.1f} Mbps down,"
             f" {upload:.1f} up, {latency} ms"
         )
-        return {
-            "download_mbps": download,
-            "upload_mbps": upload,
-            "latency_ms": latency
-        }
+        return {"download_mbps": download, "upload_mbps": upload, "latency_ms": latency}
 
     def run_once(self):
         """Single polling cycle."""
@@ -101,7 +107,7 @@ class SpeedMonitorPoller:
             upload_mbps=data["upload_mbps"],
             latency_ms=data["latency_ms"],
             adapter_name=adapter,
-            adapter_hardware_id="stub"
+            adapter_hardware_id="stub",
         )
         logger.info("Sample saved to database.")
 

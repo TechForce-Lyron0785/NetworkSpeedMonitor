@@ -50,7 +50,7 @@ FROM speed_samples
 GROUP BY day, window_start;
 
 ## 3. API Contracts (FastAPI)
-BaseURL: http://localhost:8000
+BaseURL: http://127.0.0.1:8000
 
 All endpoints return JSON. Error responses follow standard HTTP codes (400, 404, 500).
 

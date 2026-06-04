@@ -16,10 +16,10 @@ def init_db():
     os.makedirs(DB_DIR, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
+
     # Enable WAL mode for concurrency (poller writes, API reads)
     cursor.execute("PRAGMA journal_mode=WAL")
-    
+
     # Create table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS speed_samples (
@@ -32,33 +32,39 @@ def init_db():
             adapter_hardware_id TEXT
         )
     """)
-    
+
     # Create index
     cursor.execute(
         "CREATE INDEX IF NOT EXISTS idx_timestamp ON speed_samples(timestamp)"
     )
-    
+
     conn.commit()
     conn.close()
     logger.info(f"Database initialized at {DB_PATH}")
 
 
 def insert_sample(
-    download_mbps, upload_mbps, latency_ms, adapter_name,
-    adapter_hardware_id=None
+    download_mbps, upload_mbps, latency_ms, adapter_name, adapter_hardware_id=None
 ):
     """Insert one speed test result."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO speed_samples
         (timestamp, download_mbps, upload_mbps, latency_ms,
          adapter_name, adapter_hardware_id)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        datetime.now(), download_mbps, upload_mbps,
-        latency_ms, adapter_name, adapter_hardware_id
-    ))
+    """,
+        (
+            datetime.now(),
+            download_mbps,
+            upload_mbps,
+            latency_ms,
+            adapter_name,
+            adapter_hardware_id,
+        ),
+    )
     conn.commit()
     rowid = cursor.lastrowid
     conn.close()
