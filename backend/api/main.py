@@ -69,8 +69,11 @@ def get_minute_aggregates(date_str: str):
     rows = cursor.fetchall()
     conn.close()
     return [
-        {"time": row["minute"], "download": round(row["avg_download"], 1),
-         "upload": round(row["avg_upload"] or 0, 1)}
+        {
+            "time": row["minute"],
+            "download": round(row["avg_download"], 1),
+            "upload": round(row["avg_upload"] or 0, 1),
+        }
         for row in rows
     ]
 
@@ -98,10 +101,12 @@ def get_15min_worst(date_str: str, limit=5):
     rows = cursor.fetchall()
     conn.close()
     return [
-        {"window_start": row["window_start"],
-         "avg_download": round(row["avg_down"], 1),
-         "min_download": round(row["min_down"], 1),
-         "samples": row["samples"]}
+        {
+            "window_start": row["window_start"],
+            "avg_download": round(row["avg_down"], 1),
+            "min_download": round(row["min_down"], 1),
+            "samples": row["samples"],
+        }
         for row in rows
     ]
 
@@ -119,9 +124,7 @@ async def get_daily(date: str = Query(..., description="YYYY-MM-DD")):
 
 
 @app.get("/week", response_model=WeeklyResponse)
-async def get_week(
-    start_date: str = Query(..., description="Monday YYYY-MM-DD")
-):
+async def get_week(start_date: str = Query(..., description="Monday YYYY-MM-DD")):
     try:
         start = datetime.strptime(start_date, "%Y-%m-%d")
     except ValueError:
@@ -131,16 +134,13 @@ async def get_week(
         day = start + timedelta(days=i)
         date_str = day.strftime("%Y-%m-%d")
         samples = get_minute_aggregates(date_str)
-        days.append(
-            DailyResponse(date=date_str, samples=samples, worst_15min=None)
-        )
+        days.append(DailyResponse(date=date_str, samples=samples, worst_15min=None))
     return WeeklyResponse(week_start=start_date, days=days)
 
 
 @app.get("/worst-times")
 async def get_worst_times(
-    period: str = Query("day", regex="^(day|week)$"),
-    date: Optional[str] = None
+    period: str = Query("day", regex="^(day|week)$"), date: Optional[str] = None
 ):
     if period == "day":
         if not date:
@@ -169,10 +169,7 @@ async def get_worst_times(
         cursor = conn.execute(query, (start, end))
         rows = cursor.fetchall()
         conn.close()
-        return {
-            "period": "week",
-            "worst_windows": [dict(row) for row in rows]
-        }
+        return {"period": "week", "worst_windows": [dict(row) for row in rows]}
 
 
 @app.get("/health")
@@ -183,13 +180,10 @@ async def health():
     )
     row = cursor.fetchone()
     conn.close()
-    return {
-        "status": "ok",
-        "last_sample": row["last"],
-        "total_samples": row["total"]
-    }
+    return {"status": "ok", "last_sample": row["last"], "total_samples": row["total"]}
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
