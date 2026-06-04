@@ -47,9 +47,7 @@ def get_physical_adapter_wmi() -> tuple:
         # Query Win32_NetworkAdapter
         # Filters: NetEnabled=True, PhysicalAdapter=True (Windows 8+),
         # AdapterType in (0=Ethernet, 6=some physical, 9=Wireless, 71=Wi-Fi)
-        adapters = c.Win32_NetworkAdapter(
-            NetEnabled=True, PhysicalAdapter=True
-        )
+        adapters = c.Win32_NetworkAdapter(NetEnabled=True, PhysicalAdapter=True)
         for adapter in adapters:
             name = adapter.Name
             if not name:
