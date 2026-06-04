@@ -21,6 +21,7 @@ build/
 # React / Node
 node_modules/
 frontend/build/
+frontend/.tsbuildinfo/
 frontend/.env.local
 frontend/.env.development
 frontend/.env.production
