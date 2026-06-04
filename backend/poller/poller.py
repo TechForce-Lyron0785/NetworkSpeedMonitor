@@ -46,7 +46,9 @@ class SpeedMonitorPoller:
             "npcap",
             "wintun",
         )
-        preferred_markers = ("ethernet", "wi-fi", "wifi", "wireless", "wlan", "lan")
+        preferred_markers = (
+            "ethernet", "wi-fi", "wifi", "wireless", "wlan", "lan"
+        )
 
         stats = psutil.net_if_stats()
         addrs = psutil.net_if_addrs()
@@ -93,7 +95,11 @@ class SpeedMonitorPoller:
             f"Stub measurement: {download:.1f} Mbps down,"
             f" {upload:.1f} up, {latency} ms"
         )
-        return {"download_mbps": download, "upload_mbps": upload, "latency_ms": latency}
+        return {
+            "download_mbps": download,
+            "upload_mbps": upload,
+            "latency_ms": latency,
+        }
 
     def run_once(self):
         """Single polling cycle."""
