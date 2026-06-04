@@ -31,7 +31,7 @@ def get_physical_adapter_wmi() -> tuple:
     try:
         c = wmi.WMI()
         # Query Win32_NetworkAdapter
-        # Filters: NetEnabled=True, PhysicalAdapter=True (Windows 8+), 
+        # Filters: NetEnabled=True, PhysicalAdapter=True (Windows 8+),
         # AdapterType in (0=Ethernet, 6=some physical, 9=Wireless, 71=Wi-Fi)
         adapters = c.Win32_NetworkAdapter(
             NetEnabled=True,
@@ -90,12 +90,12 @@ def get_physical_adapter() -> tuple:
     if name:
         logger.info(f"Detected physical adapter via WMI: {name}")
         return name, hwid
-    
+
     name, _ = get_physical_adapter_psutil()
     if name:
         logger.info(f"Detected physical adapter via psutil fallback: {name}")
         return name, None
-    
+
     logger.warning("No physical adapter found.")
     return None, None
 
