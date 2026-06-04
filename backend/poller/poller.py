@@ -1,4 +1,5 @@
-# backend/poller/poller.py
+# backend/poller/poller.py is a placeholder that will later be replaced
+# with real adapter detection and speed measurement
 import random
 import time
 import logging
@@ -39,7 +40,6 @@ class SpeedMonitorPoller:
         )
 
         stats = psutil.net_if_stats()
-        print("stats", stats)
         addrs = psutil.net_if_addrs()
         candidates = []
 
@@ -93,7 +93,6 @@ class SpeedMonitorPoller:
     def run_once(self):
         """Single polling cycle."""
         adapter = self.get_physical_adapter()
-        print("adapter", adapter)
         if not adapter:
             logger.warning("No physical adapter found. Skipping cycle.")
             return
