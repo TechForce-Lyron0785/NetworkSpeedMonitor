@@ -1,10 +1,15 @@
 import sqlite3
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+
+try:
+    from backend.api.database import init_db
+except ImportError:
+    from database import init_db
 
 DB_DIR = "data"
 DB_PATH = os.path.join(DB_DIR, "speedmon.db")
@@ -13,9 +18,35 @@ app = FastAPI(title="Network Speed Monitor API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:3000"],
-    allow_methods=["GET"],
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
 )
+
+
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    origin = request.headers.get("origin")
+    allowed_origins = {"http://127.0.0.1:5173", "http://localhost:5173"}
+    if request.method == "OPTIONS":
+        headers = {}
+        if origin in allowed_origins:
+            headers = {
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Credentials": "true",
+            }
+        return Response(status_code=200, headers=headers)
+
+    response = await call_next(request)
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 
 # Pydantic models
@@ -48,6 +79,11 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 
 def get_minute_aggregates(date_str: str):

@@ -105,7 +105,7 @@ const WeeklyStack = ({ startDate, onLoading, onError }: WeeklyStackProps) => {
       cancelled = true;
       controller.abort();
     };
-  }, [startDate, onLoading, onError]);
+  }, [startDate]);
 
   if (loading) return <div className="loading">Loading weekly data...</div>;
   if (error) return <div className="error">Error: {error}</div>;
