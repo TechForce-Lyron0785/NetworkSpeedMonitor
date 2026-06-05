@@ -50,16 +50,16 @@ const DailyGraph = ({ date, samples }: DailyGraphProps) => {
   }
   return (
     <div className="daily-graph">
-      <h3>{date}</h3>
-      <ResponsiveContainer width="100%" height={150}>
+      <h3>📊 {date}</h3>
+      <ResponsiveContainer width="100%" height={180}>
         <LineChart data={samples}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
           <YAxis domain={[0, 100]} />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="download" stroke="#8884d8" name="Download (Mbps)" dot={false} />
-          <Line type="monotone" dataKey="upload" stroke="#82ca9d" name="Upload (Mbps)" dot={false} />
+          <Line type="monotone" dataKey="download" stroke="var(--primary)" strokeWidth={2} name="Download (Mbps)" dot={false} activeDot={{ r: 6 }} />
+          <Line type="monotone" dataKey="upload" stroke="var(--secondary)" strokeWidth={2} name="Upload (Mbps)" dot={false} activeDot={{ r: 6 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -141,7 +141,7 @@ const WorstTimePanel = ({ date }: { date: string }) => {
     fetchWorst();
   }, [date]);
 
-  if (loading) return <div>Analyzing worst times...</div>;
+  if (loading) return <div className="loading">Analyzing worst times...</div>;
   if (!worst || worst.length === 0) return null;
   return (
     <div className="worst-panel">
@@ -191,29 +191,31 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>Network Speed Monitor</h1>
+        <h1>⚡ Network Speed Monitor</h1>
         <p>Your true speed, not your tunnel speed.</p>
         <HealthIndicator />
         <div className="controls">
-          <label>Week starting Monday: </label>
+          <label>📅 Week starting Monday:</label>
           <input
             type="date"
             value={startDate}
             onChange={e => setStartDate(e.target.value)}
+            title="Select week start date"
+            aria-label="Select week start date"
           />
-          <button onClick={() => window.location.reload()}>Refresh</button>
+          <button onClick={() => window.location.reload()} title="Refresh data" aria-label="Refresh data" type="button">🔄 Refresh</button>
         </div>
       </header>
       <main>
-        <WorstTimePanel date={new Date().toISOString().slice(0,10)} />
         <WeeklyStack
           startDate={startDate}
           onLoading={setGlobalLoading}
           onError={(err) => console.error(err)}
         />
+        <WorstTimePanel date={new Date().toISOString().slice(0,10)} />
       </main>
       <footer>
-        <p>Data refreshes automatically every minute.</p>
+        <p>🔄 Data refreshes automatically every minute.</p>
       </footer>
     </div>
   );
