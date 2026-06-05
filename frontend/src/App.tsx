@@ -44,6 +44,74 @@ interface HealthData {
   total_samples: number;
 }
 
+const TodayGraph = () => {
+  const [todayData, setTodayData] = useState<DailyData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchToday = async () => {
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const response = await axios.get(`${API_BASE}/daily`, {
+          params: { date: today }
+        });
+        setTodayData(response.data);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchToday();
+  }, []);
+
+  if (loading) return <div className="loading">Loading today's data...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
+  if (!todayData) return null;
+
+  return (
+    <div className="today-graph">
+      <h2>📈 Today's Speed Summary - {todayData.date}</h2>
+      <ResponsiveContainer width="100%" height={250}>
+        <LineChart data={todayData.samples}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="time" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
+          <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: 'var(--bg-primary)', 
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              boxShadow: 'var(--shadow-lg)'
+            }}
+          />
+          <Legend />
+          <Line 
+            type="monotone" 
+            dataKey="download" 
+            stroke="var(--primary)" 
+            strokeWidth={3}
+            name="Download (Mbps)" 
+            dot={false} 
+            activeDot={{ r: 8 }}
+          />
+          <Line 
+            type="monotone" 
+            dataKey="upload" 
+            stroke="var(--secondary)" 
+            strokeWidth={3}
+            name="Upload (Mbps)" 
+            dot={false} 
+            activeDot={{ r: 8 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 const DailyGraph = ({ date, samples }: DailyGraphProps) => {
   if (!samples || samples.length === 0) {
     return <div className="graph-placeholder">No data for {date}</div>;
@@ -207,6 +275,7 @@ function App() {
         </div>
       </header>
       <main>
+        <TodayGraph />
         <WeeklyStack
           startDate={startDate}
           onLoading={setGlobalLoading}
