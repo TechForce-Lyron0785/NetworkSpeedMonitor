@@ -8,8 +8,8 @@ import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from poller.adapter import get_physical_adapter  # noqa: E402
-from poller.speedtest import measure_speed, get_adapter_ip  # noqa: E402
+from adapter import get_physical_adapter  # noqa: E402
+from speedtest import measure_speed, get_adapter_ip  # noqa: E402
 from api.database import insert_sample, init_db  # noqa: E402
 
 logging.basicConfig(
