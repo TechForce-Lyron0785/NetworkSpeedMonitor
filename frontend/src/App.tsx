@@ -76,16 +76,30 @@ const TodayGraph = () => {
   const generateFullTimeRange = () => {
     const fullRange = [];
     for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 15) {
+      for (let m = 0; m < 60; m += 5) {
         fullRange.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
       }
     }
     return fullRange;
   };
 
+  // Map API data times to nearest 5-minute interval
+  const mapTo5MinInterval = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const roundedMinutes = Math.round(minutes / 5) * 5;
+    const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
+    const adjustedMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+    return `${String(adjustedHours % 24).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}`;
+  };
+
+  const mappedSamples = todayData.samples.map(sample => ({
+    ...sample,
+    time: mapTo5MinInterval(sample.time)
+  }));
+
   const fullTimeRange = generateFullTimeRange();
   const mergedData = fullTimeRange.map(time => {
-    const sample = todayData.samples.find(s => s.time === time);
+    const sample = mappedSamples.find(s => s.time === time);
     return sample || { time, download: 0, upload: 0 };
   });
 
@@ -99,7 +113,7 @@ const TodayGraph = () => {
             dataKey="time" 
             tick={{ fontSize: 12 }} 
             interval="preserveStartEnd"
-            domain={['00:00', '23:45']}
+            domain={['00:00', '23:55']}
             type="category"
           />
           <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
@@ -145,16 +159,30 @@ const DailyGraph = ({ date, samples }: DailyGraphProps) => {
   const generateFullTimeRange = () => {
     const fullRange = [];
     for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 15) {
+      for (let m = 0; m < 60; m += 5) {
         fullRange.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
       }
     }
     return fullRange;
   };
 
+  // Map API data times to nearest 5-minute interval
+  const mapTo5MinInterval = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const roundedMinutes = Math.round(minutes / 5) * 5;
+    const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
+    const adjustedMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+    return `${String(adjustedHours % 24).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}`;
+  };
+
+  const mappedSamples = samples.map(sample => ({
+    ...sample,
+    time: mapTo5MinInterval(sample.time)
+  }));
+
   const fullTimeRange = generateFullTimeRange();
   const mergedData = fullTimeRange.map(time => {
-    const sample = samples.find(s => s.time === time);
+    const sample = mappedSamples.find(s => s.time === time);
     return sample || { time, download: 0, upload: 0 };
   });
 
@@ -168,7 +196,7 @@ const DailyGraph = ({ date, samples }: DailyGraphProps) => {
             dataKey="time" 
             tick={{ fontSize: 10 }} 
             interval="preserveStartEnd"
-            domain={['00:00', '23:45']}
+            domain={['00:00', '23:55']}
             type="category"
           />
           <YAxis domain={[0, 100]} />
