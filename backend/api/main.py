@@ -178,9 +178,7 @@ async def get_week(start_date: str = Query(..., description="Monday YYYY-MM-DD")
         day = start + timedelta(days=i)
         date_str = day.strftime("%Y-%m-%d")
         samples = get_minute_aggregates(date_str)
-        days.append(
-            DailyResponse(date=date_str, samples=samples, worst_15min=None)
-        )
+        days.append(DailyResponse(date=date_str, samples=samples, worst_15min=None))
     return WeeklyResponse(week_start=start_date, days=days)
 
 

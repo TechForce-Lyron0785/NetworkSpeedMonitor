@@ -69,7 +69,7 @@ def main():
             for minute in range(0, 60, 15):
                 timestamp = current_date.replace(hour=hour, minute=minute)
                 local_tz = datetime.now().astimezone().tzinfo
-                timestamp_local = timestamp.replace(tzinfo=local_tz).isoformat(sep=' ')
+                timestamp_local = timestamp.replace(tzinfo=local_tz).isoformat(sep=" ")
 
                 # Generate realistic speed data
                 speed_data = generate_realistic_speed(hour)
