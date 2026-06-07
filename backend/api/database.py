@@ -61,7 +61,7 @@ def insert_sample(
         VALUES (?, ?, ?, ?, ?, ?)
     """,
         (
-            datetime.now(),
+            datetime.now().astimezone().isoformat(sep=" "),
             download_mbps,
             upload_mbps,
             latency_ms,

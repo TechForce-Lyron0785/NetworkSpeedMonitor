@@ -93,11 +93,11 @@ def get_minute_aggregates(date_str: str):
     end = start + timedelta(days=1)
     query = """
         SELECT
-            strftime('%H:%M', timestamp, 'localtime') as minute,
+            strftime('%H:%M', datetime(timestamp, 'localtime')) as minute,
             AVG(download_mbps) as avg_download,
             AVG(upload_mbps) as avg_upload
         FROM speed_samples
-        WHERE timestamp >= ? AND timestamp < ?
+        WHERE datetime(timestamp, 'localtime') >= ? AND datetime(timestamp, 'localtime') < ?
         GROUP BY minute
         ORDER BY minute
     """
@@ -122,13 +122,17 @@ def get_15min_worst(date_str: str, limit=5):
     query = """
         SELECT
             strftime('%H:%M',
-                datetime((strftime('%s', timestamp) / 900) * 900, 'unixepoch')
+                datetime(
+                    (strftime('%s', datetime(timestamp, 'localtime'), 'utc') / 900) * 900,
+                    'unixepoch',
+                    'localtime'
+                )
             ) as window_start,
             AVG(download_mbps) as avg_down,
             MIN(download_mbps) as min_down,
             COUNT(*) as samples
         FROM speed_samples
-        WHERE timestamp >= ? AND timestamp < ?
+        WHERE datetime(timestamp, 'localtime') >= ? AND datetime(timestamp, 'localtime') < ?
         GROUP BY window_start
         ORDER BY avg_down ASC
         LIMIT ?
@@ -191,13 +195,15 @@ async def get_worst_times(
         start = end - timedelta(days=7)
         query = """
             SELECT
-                date(timestamp) as day,
+                date(datetime(timestamp, 'localtime')) as day,
                 strftime('%H:%M', datetime(
-                    (strftime('%s', timestamp) / 900) * 900, 'unixepoch'
+                    (strftime('%s', datetime(timestamp, 'localtime'), 'utc') / 900) * 900,
+                    'unixepoch',
+                    'localtime'
                 )) as window_start,
                 AVG(download_mbps) as avg_down
             FROM speed_samples
-            WHERE timestamp >= ? AND timestamp < ?
+            WHERE datetime(timestamp, 'localtime') >= ? AND datetime(timestamp, 'localtime') < ?
             GROUP BY day, window_start
             ORDER BY avg_down ASC
             LIMIT 10
@@ -212,7 +218,7 @@ async def get_worst_times(
 async def health():
     conn = get_db()
     cursor = conn.execute(
-        "SELECT MAX(timestamp) as last, COUNT(*) as total FROM speed_samples"
+        "SELECT strftime('%Y-%m-%d %H:%M:%f', MAX(timestamp), 'localtime') as last, COUNT(*) as total FROM speed_samples"
     )
     row = cursor.fetchone()
     conn.close()

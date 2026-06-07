@@ -68,6 +68,8 @@ def main():
         for hour in range(24):
             for minute in range(0, 60, 15):
                 timestamp = current_date.replace(hour=hour, minute=minute)
+                local_tz = datetime.now().astimezone().tzinfo
+                timestamp_local = timestamp.replace(tzinfo=local_tz).isoformat(sep=' ')
 
                 # Generate realistic speed data
                 speed_data = generate_realistic_speed(hour)
@@ -81,7 +83,7 @@ def main():
                     VALUES (?, ?, ?, ?, ?, ?)
                     """,
                     (
-                        timestamp,
+                        timestamp_local,
                         speed_data["download_speed"],
                         speed_data["upload_speed"],
                         int(speed_data["latency"]),
