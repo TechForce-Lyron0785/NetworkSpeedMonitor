@@ -56,7 +56,7 @@ def main():
 
     # Date range
     start_date = datetime(2026, 5, 1)
-    end_date = datetime(2026, 6, 4)
+    end_date = datetime(2026, 6, 6)
 
     current_date = start_date
     total_samples = 0
