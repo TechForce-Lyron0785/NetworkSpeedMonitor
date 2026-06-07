@@ -65,26 +65,51 @@ const TodayGraph = () => {
       }
     };
     fetchToday();
+    const interval = setInterval(fetchToday, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return <div className="loading">Loading today's data...</div>;
   if (error) return <div className="error">Error: {error}</div>;
   if (!todayData) return null;
 
+  const generateFullTimeRange = () => {
+    const fullRange = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 15) {
+        fullRange.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    return fullRange;
+  };
+
+  const fullTimeRange = generateFullTimeRange();
+  const mergedData = fullTimeRange.map(time => {
+    const sample = todayData.samples.find(s => s.time === time);
+    return sample || { time, download: 0, upload: 0 };
+  });
+
   return (
-    <div className="today-graph">
-      <h2>📈 Today's Speed Summary - {todayData.date}</h2>
+    <div className="today-graph" style={{ marginBottom: '2rem', backgroundColor: 'rgb(37 63 38 / 41%)' }} key={todayData.date}>
+      <h2>Today's Speed Summary - {todayData.date}</h2>
       <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={todayData.samples}>
+        <LineChart data={mergedData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
+          <XAxis 
+            dataKey="time" 
+            tick={{ fontSize: 12 }} 
+            interval="preserveStartEnd"
+            domain={['00:00', '23:45']}
+            type="category"
+          />
           <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: 'var(--bg-primary)', 
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              boxShadow: 'var(--shadow-lg)'
+              backgroundColor: 'rgba(139, 92, 246, 0.15)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(139, 92, 246, 0.2)',
+              backdropFilter: 'blur(12px)'
             }}
           />
           <Legend />
@@ -116,15 +141,46 @@ const DailyGraph = ({ date, samples }: DailyGraphProps) => {
   if (!samples || samples.length === 0) {
     return <div className="graph-placeholder">No data for {date}</div>;
   }
+
+  const generateFullTimeRange = () => {
+    const fullRange = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 15) {
+        fullRange.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    return fullRange;
+  };
+
+  const fullTimeRange = generateFullTimeRange();
+  const mergedData = fullTimeRange.map(time => {
+    const sample = samples.find(s => s.time === time);
+    return sample || { time, download: 0, upload: 0 };
+  });
+
   return (
     <div className="daily-graph">
-      <h3>📊 {date}</h3>
+      <h3>{date}</h3>
       <ResponsiveContainer width="100%" height={180}>
-        <LineChart data={samples}>
+        <LineChart data={mergedData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+          <XAxis 
+            dataKey="time" 
+            tick={{ fontSize: 10 }} 
+            interval="preserveStartEnd"
+            domain={['00:00', '23:45']}
+            type="category"
+          />
           <YAxis domain={[0, 100]} />
-          <Tooltip />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: 'rgba(139, 92, 246, 0.15)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(139, 92, 246, 0.2)',
+              backdropFilter: 'blur(12px)'
+            }}
+          />
           <Legend />
           <Line type="monotone" dataKey="download" stroke="var(--primary)" strokeWidth={2} name="Download (Mbps)" dot={false} activeDot={{ r: 6 }} />
           <Line type="monotone" dataKey="upload" stroke="var(--secondary)" strokeWidth={2} name="Upload (Mbps)" dot={false} activeDot={{ r: 6 }} />
@@ -142,36 +198,44 @@ const WeeklyStack = ({ startDate, onLoading, onError }: WeeklyStackProps) => {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
-    onLoading?.(true);
-    axios
-      .get(`${API_BASE}/week`, {
-        params: { start_date: startDate },
-        signal: controller.signal,
-      })
-      .then(response => {
-        if (!cancelled) {
-          setLoading(true);
-          setWeekData(response.data);
-          setError(null);
-        }
-      })
-      .catch(err => {
-        if (!cancelled) {
-          setLoading(true);
-          const msg = err instanceof Error ? err.message : String(err);
-          setError(msg);
-          onError?.(msg);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          onLoading?.(false);
-        }
-      });
+    
+    const fetchWeek = () => {
+      onLoading?.(true);
+      axios
+        .get(`${API_BASE}/week`, {
+          params: { start_date: startDate },
+          signal: controller.signal,
+        })
+        .then(response => {
+          if (!cancelled) {
+            setLoading(true);
+            setWeekData(response.data);
+            setError(null);
+          }
+        })
+        .catch(err => {
+          if (!cancelled) {
+            setLoading(true);
+            const msg = err instanceof Error ? err.message : String(err);
+            setError(msg);
+            onError?.(msg);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+            onLoading?.(false);
+          }
+        });
+    };
+    
+    fetchWeek();
+    const interval = setInterval(fetchWeek, 60000);
+    
     return () => {
       cancelled = true;
       controller.abort();
+      clearInterval(interval);
     };
   }, [startDate]);
 
@@ -207,13 +271,15 @@ const WorstTimePanel = ({ date }: { date: string }) => {
       }
     };
     fetchWorst();
+    const interval = setInterval(fetchWorst, 60000);
+    return () => clearInterval(interval);
   }, [date]);
 
   if (loading) return <div className="loading">Analyzing worst times...</div>;
   if (!worst || worst.length === 0) return null;
   return (
     <div className="worst-panel">
-      <h3>⚠️ Worst 15‑minute periods today</h3>
+      <h3>Worst 15-minute periods today</h3>
       <ul>
         {worst.map((w, idx) => (
           <li key={idx}>
@@ -241,7 +307,7 @@ const HealthIndicator = () => {
   if (!health) return <div className="health-error">Poller unreachable</div>;
   return (
     <div className="health-ok">
-      ✅ Poller active | Last sample: {new Date(health.last_sample).toLocaleString()} | Total samples: {health.total_samples}
+      Poller active | Last sample: {new Date(health.last_sample).toLocaleString()} | Total samples: {health.total_samples}
     </div>
   );
 };
@@ -259,11 +325,11 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>⚡ Network Speed Monitor</h1>
+        <h1>Network Speed Monitor</h1>
         <p>Your true speed, not your tunnel speed.</p>
         <HealthIndicator />
         <div className="controls">
-          <label>📅 Week starting Monday:</label>
+          <label>Week starting Monday:</label>
           <input
             type="date"
             value={startDate}
@@ -271,7 +337,6 @@ function App() {
             title="Select week start date"
             aria-label="Select week start date"
           />
-          <button onClick={() => window.location.reload()} title="Refresh data" aria-label="Refresh data" type="button">🔄 Refresh</button>
         </div>
       </header>
       <main>
@@ -284,7 +349,7 @@ function App() {
         <WorstTimePanel date={new Date().toISOString().slice(0,10)} />
       </main>
       <footer>
-        <p>🔄 Data refreshes automatically every minute.</p>
+        <p>Data refreshes automatically every minute.</p>
       </footer>
     </div>
   );
