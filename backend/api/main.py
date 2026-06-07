@@ -1,7 +1,9 @@
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Query, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
 import os
@@ -18,7 +20,11 @@ app = FastAPI(title="Network Speed Monitor API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_origins=[
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:8000"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
@@ -232,6 +238,18 @@ async def health():
     row = cursor.fetchone()
     conn.close()
     return {"status": "ok", "last_sample": row["last"], "total_samples": row["total"]}
+
+
+# Mount static files at the end so API routes are registered first
+if getattr(sys, "frozen", False):
+    static_dir = os.path.join(sys._MEIPASS, "static")
+else:
+    static_dir = os.path.join(
+        os.path.dirname(__file__), "..", "..", "frontend", "dist"
+    )
+
+if os.path.exists(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 
 
 if __name__ == "__main__":
