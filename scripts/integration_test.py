@@ -3,6 +3,7 @@
 Integration test: poller -> API -> frontend.
 Verifies data flow and performance.
 """
+
 import os
 import sqlite3
 import sys
@@ -46,8 +47,7 @@ def test_week():
 def test_worst():
     print("Testing /worst-times...")
     resp = requests.get(
-        f"{API_URL}/worst-times",
-        params={"period": "day", "date": "2026-06-03"}
+        f"{API_URL}/worst-times", params={"period": "day", "date": "2026-06-03"}
     )
     assert resp.status_code == 200
     print("OK")

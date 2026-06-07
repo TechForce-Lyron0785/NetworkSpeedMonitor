@@ -2,6 +2,7 @@
 Generate mock network speed data for testing.
 Fills data from 2026-05-01 to 2026-06-04.
 """
+
 import sqlite3
 import os
 from datetime import datetime, timedelta
@@ -18,25 +19,25 @@ def generate_realistic_speed(hour):
     """
     # Base speeds
     base_download = 100.0  # Mbps
-    base_upload = 50.0     # Mbps
-    base_latency = 15.0    # ms
+    base_upload = 50.0  # Mbps
+    base_latency = 15.0  # ms
 
     # Peak hours slowdown factor
     if (6 <= hour < 9) or (18 <= hour < 23):
         factor = random.uniform(0.3, 0.6)  # Slower during peak
-    elif (9 <= hour < 17):
-        factor = random.uniform(0.8, 1.0)   # Normal business hours
+    elif 9 <= hour < 17:
+        factor = random.uniform(0.8, 1.0)  # Normal business hours
     else:
-        factor = random.uniform(0.9, 1.1)   # Off-peak (fastest)
+        factor = random.uniform(0.9, 1.1)  # Off-peak (fastest)
 
     download_speed = base_download * factor + random.uniform(-10, 10)
     upload_speed = base_upload * factor + random.uniform(-5, 5)
     latency = base_latency / factor + random.uniform(-5, 10)
 
     return {
-        'download_speed': max(25.0, download_speed),  # Minimum 25 Mbps
-        'upload_speed': max(15.0, upload_speed),      # Minimum 15 Mbps
-        'latency': max(5.0, latency)                 # Minimum 5 ms
+        "download_speed": max(25.0, download_speed),  # Minimum 25 Mbps
+        "upload_speed": max(15.0, upload_speed),  # Minimum 15 Mbps
+        "latency": max(5.0, latency),  # Minimum 5 ms
     }
 
 
@@ -81,12 +82,12 @@ def main():
                     """,
                     (
                         timestamp,
-                        speed_data['download_speed'],
-                        speed_data['upload_speed'],
-                        int(speed_data['latency']),
+                        speed_data["download_speed"],
+                        speed_data["upload_speed"],
+                        int(speed_data["latency"]),
                         "Ethernet Adapter",
-                        "HWID-1234"
-                    )
+                        "HWID-1234",
+                    ),
                 )
 
                 total_samples += 1
