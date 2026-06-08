@@ -95,7 +95,9 @@ def startup_event():
 def get_minute_aggregates(date_str: str):
     """Return minute-resolution data for a single day."""
     conn = get_db()
-    start = datetime.strptime(date_str, "%Y-%m-%d")
+    # Parse as local date and convert to local datetime bounds
+    start_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    start = datetime.combine(start_date, datetime.min.time())
     end = start + timedelta(days=1)
     query = """
         SELECT
@@ -103,12 +105,11 @@ def get_minute_aggregates(date_str: str):
             AVG(download_mbps) as avg_download,
             AVG(upload_mbps) as avg_upload
         FROM speed_samples
-        WHERE datetime(timestamp, 'localtime') >= ?
-            AND datetime(timestamp, 'localtime') < ?
+        WHERE date(datetime(timestamp, 'localtime')) = ?
         GROUP BY minute
         ORDER BY minute
     """
-    cursor = conn.execute(query, (start, end))
+    cursor = conn.execute(query, (date_str,))
     rows = cursor.fetchall()
     conn.close()
     return [
@@ -124,8 +125,6 @@ def get_minute_aggregates(date_str: str):
 def get_15min_worst(date_str: str, limit=5):
     """Return worst 15-min windows for a day."""
     conn = get_db()
-    start = datetime.strptime(date_str, "%Y-%m-%d")
-    end = start + timedelta(days=1)
     query = """
         SELECT
             strftime('%H:%M',
@@ -141,13 +140,12 @@ def get_15min_worst(date_str: str, limit=5):
             MIN(download_mbps) as min_down,
             COUNT(*) as samples
         FROM speed_samples
-        WHERE datetime(timestamp, 'localtime') >= ?
-            AND datetime(timestamp, 'localtime') < ?
+        WHERE date(datetime(timestamp, 'localtime')) = ?
         GROUP BY window_start
         ORDER BY avg_down ASC
         LIMIT ?
     """
-    cursor = conn.execute(query, (start, end, limit))
+    cursor = conn.execute(query, (date_str, limit))
     rows = cursor.fetchall()
     conn.close()
     return [

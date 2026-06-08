@@ -52,7 +52,7 @@ const TodayGraph = () => {
   useEffect(() => {
     const fetchToday = async () => {
       try {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = new Date().toLocaleDateString('en-CA');
         const response = await axios.get(`${API_BASE}/daily`, {
           params: { date: today }
         });
@@ -346,7 +346,7 @@ function App() {
     const diff = today.getDay() === 0 ? 6 : today.getDay() - 1;
     const monday = new Date(today);
     monday.setDate(today.getDate() - diff);
-    return monday.toISOString().slice(0, 10);
+    return monday.toLocaleDateString('en-CA');
   });
   const [, setGlobalLoading] = useState(false);
 
@@ -374,7 +374,7 @@ function App() {
           onLoading={setGlobalLoading}
           onError={(err) => console.error(err)}
         />
-        <WorstTimePanel date={new Date().toISOString().slice(0,10)} />
+        <WorstTimePanel date={new Date().toLocaleDateString('en-CA')} />
       </main>
       <footer>
         <p>Data refreshes automatically every minute.</p>
