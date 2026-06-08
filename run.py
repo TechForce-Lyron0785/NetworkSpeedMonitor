@@ -28,9 +28,9 @@ if __name__ == "__main__":
     # Start API in daemon thread
     api_thread = threading.Thread(target=run_api, daemon=True)
     api_thread.start()
-    
+
     # Wait a moment for API to initialize
     time.sleep(2)
-    
+
     # Run poller in main thread (it handles its own shutdown signals)
     run_poller()

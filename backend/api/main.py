@@ -23,7 +23,8 @@ app.add_middleware(
     allow_origins=[
         "http://127.0.0.1:5173",
         "http://localhost:5173",
-        "http://127.0.0.1:8000"
+        "http://127.0.0.1:8000",
+        "http://localhost:8000"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,7 +35,7 @@ app.add_middleware(
 @app.middleware("http")
 async def add_cors_headers(request: Request, call_next):
     origin = request.headers.get("origin")
-    allowed_origins = {"http://127.0.0.1:5173", "http://localhost:5173"}
+    allowed_origins = {"http://127.0.0.1:5173", "http://localhost:5173", "http://127.0.0.1:8000", "http://localhost:8000"}
     if request.method == "OPTIONS":
         headers = {}
         if origin in allowed_origins:
@@ -95,10 +96,6 @@ def startup_event():
 def get_minute_aggregates(date_str: str):
     """Return minute-resolution data for a single day."""
     conn = get_db()
-    # Parse as local date and convert to local datetime bounds
-    start_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-    start = datetime.combine(start_date, datetime.min.time())
-    end = start + timedelta(days=1)
     query = """
         SELECT
             strftime('%H:%M', datetime(timestamp, 'localtime')) as minute,
