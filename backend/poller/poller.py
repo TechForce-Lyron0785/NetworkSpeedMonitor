@@ -24,50 +24,71 @@ class SpeedMonitorPoller:
     def __init__(self):
         self.running = True
         init_db()
-        # Register signal for Windows service stop
+        # Register signal handlers with proper Windows compatibility
         signal.signal(signal.SIGTERM, self.shutdown)
         signal.signal(signal.SIGINT, self.shutdown)
-        # On Windows, nssm sends CTRL_BREAK
-        signal.signal(signal.SIGBREAK, self.shutdown)
+        # On Windows, nssm sends CTRL_BREAK (only available on Windows)
+        if hasattr(signal, 'SIGBREAK'):
+            signal.signal(signal.SIGBREAK, self.shutdown)
 
     def shutdown(self, signum, frame):
         logger.info(f"Received signal {signum}. Shutting down...")
         self.running = False
 
     def run_once(self):
-        """Single polling cycle."""
-        adapter_name, adapter_hwid = get_physical_adapter()
-        if not adapter_name:
-            logger.warning("No physical adapter found. Skipping this cycle.")
-            return
+        """Single polling cycle with enhanced error handling."""
+        try:
+            adapter_name, adapter_hwid = get_physical_adapter()
+            if not adapter_name:
+                logger.warning("No physical adapter found. Skipping this cycle.")
+                return
 
-        ip = get_adapter_ip(adapter_name)
-        if not ip:
-            logger.warning(f"Adapter {adapter_name} has no IP. Skipping.")
-            return
+            ip = get_adapter_ip(adapter_name)
+            if not ip:
+                logger.warning(f"Adapter {adapter_name} has no IP. Skipping.")
+                return
 
-        logger.info(f"Testing on adapter: {adapter_name} ({ip})")
-        data = measure_speed(adapter_name)
+            logger.info(f"Testing on adapter: {adapter_name} ({ip})")
+            data = measure_speed(adapter_name)
 
-        if data["download_mbps"] > 0:
-            insert_sample(
-                download_mbps=data["download_mbps"],
-                upload_mbps=data["upload_mbps"],
-                latency_ms=data["latency_ms"],
-                adapter_name=adapter_name,
-                adapter_hardware_id=adapter_hwid,
-            )
-            logger.info("Sample saved.")
-        else:
-            logger.warning("Speed test failed (0 Mbps). Not saving.")
+            if data["download_mbps"] > 0:
+                insert_sample(
+                    download_mbps=data["download_mbps"],
+                    upload_mbps=data["upload_mbps"],
+                    latency_ms=data["latency_ms"],
+                    adapter_name=adapter_name,
+                    adapter_hardware_id=adapter_hwid,
+                )
+                logger.info("Sample saved.")
+            else:
+                logger.warning("Speed test failed (0 Mbps). Not saving.")
+                
+        except Exception as e:
+            logger.error(f"Error during polling cycle: {e}")
+            # Continue running even if one cycle fails
 
     def run_forever(self):
         logger.info("Poller started (real mode).")
         while self.running:
-            self.run_once()
-            interval = random.randint(180, 300)  # 3-5 minutes
-            logger.info(f"Next poll in {interval} seconds.")
-            time.sleep(interval)
+            try:
+                self.run_once()
+                if self.running:  # Check if still running before sleep
+                    interval = random.randint(180, 300)  # 3-5 minutes
+                    logger.info(f"Next poll in {interval} seconds.")
+                    
+                    # Sleep in smaller chunks to be more responsive to shutdown
+                    for _ in range(interval):
+                        if not self.running:
+                            break
+                        time.sleep(1)
+            except KeyboardInterrupt:
+                logger.info("Keyboard interrupt received. Stopping...")
+                self.running = False
+            except Exception as e:
+                logger.error(f"Unexpected error in main loop: {e}")
+                # Wait a bit before retrying to avoid rapid failure loops
+                time.sleep(30)
+                
         logger.info("Poller stopped.")
 
 
